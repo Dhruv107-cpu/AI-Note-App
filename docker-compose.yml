@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: notes_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: notesdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  qdrant:
+    image: qdrant/qdrant
+    container_name: notes_qdrant
+    ports:
+      - "6334:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  backend:
+    build: ./backend
+    container_name: notes_backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - qdrant
+    env_file:
+      - ./backend/.env
+
+  frontend:
+    build: ./frontend
+    container_name: notes_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  qdrant_data:
