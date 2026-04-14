@@ -6,7 +6,7 @@ from .. import models, schemas
 from ..database import SessionLocal
 from ..services.embedding_service import generate_embedding
 from ..services.qdrant_service import upsert_embedding, search_similar
-from ..services.grok_service import ask_grok
+from ..services.gemini_service import ask_gemini
 
 
 router = APIRouter(prefix="/notes", tags=["Notes"])
@@ -113,8 +113,7 @@ def ask_question(request: schemas.QuestionRequest, db: Session = Depends(get_db)
 
     note_texts = [note.content for note in notes]
 
-    # 4️⃣ Ask Grok
-    answer = ask_grok(request.question, note_texts)
+    answer = ask_gemini(request.question, note_texts)
 
     return {
         "question": request.question,
