@@ -12,7 +12,7 @@ function App() {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
-  const API_BASE = "http://localhost:8000";
+const API_BASE = "https://ai-note-backend-6sxs.onrender.com";
 
   // ===============================
   // Fetch Notes
