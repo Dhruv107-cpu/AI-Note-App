@@ -40,3 +40,91 @@
 .read-the-docs {
   color: #888;
 }
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.app-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.glass-card {
+  width: 600px;
+  padding: 30px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 0 40px rgba(0, 255, 255, 0.2);
+}
+
+.title {
+  text-align: center;
+  font-size: 32px;
+  margin-bottom: 20px;
+  color: #00ffff;
+}
+
+textarea,
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.primary-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  background: linear-gradient(90deg, #00ffff, #7f00ff);
+  color: black;
+  margin-top: 10px;
+}
+
+.primary-btn:hover {
+  transform: scale(1.05);
+}
+
+.mic-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+  background: #111827;
+  color: #00ffff;
+  border: 1px solid #00ffff;
+}
+
+.mic-btn.recording {
+  animation: pulse 1s infinite;
+  background: #7f00ff;
+  color: white;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 10px #7f00ff; }
+  50% { box-shadow: 0 0 30px #7f00ff; }
+  100% { box-shadow: 0 0 10px #7f00ff; }
+}
+
+.answer-box {
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(0,255,255,0.1);
+  border-radius: 10px;
+}

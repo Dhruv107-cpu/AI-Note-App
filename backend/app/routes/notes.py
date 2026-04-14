@@ -1,12 +1,9 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Query
+from fastapi import APIRouter, Depends,   Query
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
-import shutil
-import os
+
 
 from .. import models, schemas
 from ..database import SessionLocal
-from ..services.whisper_service import transcribe_audio
 from ..services.embedding_service import generate_embedding
 from ..services.qdrant_service import upsert_embedding, search_similar
 from ..services.grok_service import ask_grok
@@ -18,7 +15,7 @@ router = APIRouter(prefix="/notes", tags=["Notes"])
 # =========================
 # DB Dependency
 # =========================
-def get_db():
+def get_db():   
     db = SessionLocal()
     try:
         yield db
@@ -87,33 +84,6 @@ def get_note(note_id: int, db: Session = Depends(get_db)):
 # =========================
 # UPLOAD AUDIO → TRANSCRIBE
 
-@router.post("/upload")
-def upload_audio(file: UploadFile = File(...)):
-    temp_file_path = f"temp_{file.filename}"
-
-    try:
-        # Save uploaded file
-        with open(temp_file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        # Transcribe audio
-        transcription = transcribe_audio(temp_file_path)
-
-        return {
-            "transcription": transcription
-        }
-
-    except Exception as e:
-        print("Upload error:", e)
-        return {"error": "Audio processing failed"}
-
-    finally:
-        # Safe cleanup
-        if os.path.exists(temp_file_path):
-            try:
-                os.remove(temp_file_path)
-            except Exception as e:
-                print("Cleanup error:", e)
 
 
 # =========================

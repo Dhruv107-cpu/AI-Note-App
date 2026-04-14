@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
+
+
 function App() {
   const [note, setNote] = useState("");
   const [notes, setNotes] = useState([]);
@@ -138,104 +140,107 @@ function App() {
     }
   };
 
-return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white p-8">
-      <div className="max-w-4xl mx-auto space-y-10">
+   return (
+  <div className="min-h-screen flex items-center justify-center p-6">
+    <div className="w-full max-w-4xl bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
 
-        {/* Header */}
-        <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
-          🧠 AI Voice Notes
-        </h1>
+      <h1 className="text-4xl font-bold text-center mb-8">
+        🧠 AI Voice Notes
+      </h1>
 
-        {/* Create Note Card */}
-        <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl p-6 shadow-lg">
-          <h2 className="text-xl mb-4 font-semibold">Create / Edit Note</h2>
-
-          <textarea
-            className="w-full bg-black/40 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            rows="3"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Write or record your note..."
-          />
-
-          <div className="flex gap-4 mt-4">
-            <button
-              onClick={createNote}
-              className="bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg transition"
-            >
-              Save Note
-            </button>
-
-            {!recording ? (
-              <button
-                onClick={startRecording}
-                className="bg-pink-600 hover:bg-pink-700 px-5 py-2 rounded-lg transition"
-              >
-                🎙️ Start Recording
-              </button>
-            ) : (
-              <button
-                onClick={stopRecording}
-                className="bg-red-600 animate-pulse px-5 py-2 rounded-lg"
-              >
-                ⏹ Stop Recording
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Saved Notes */}
-        <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl p-6 shadow-lg">
-          <h2 className="text-xl mb-4 font-semibold">Saved Notes</h2>
-
-          <div className="space-y-3">
-            {notes.map((n) => (
-              <div
-                key={n.id}
-                className="flex justify-between items-center bg-black/40 p-3 rounded-lg"
-              >
-                <span>{n.content}</span>
-                <button
-                  onClick={() => deleteNote(n.id)}
-                  className="text-red-400 hover:text-red-600"
-                >
-                  ❌
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Ask Section */}
-        <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl p-6 shadow-lg">
-          <h2 className="text-xl mb-4 font-semibold">Ask AI</h2>
-
-          <input
-            className="w-full bg-black/40 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder="What did I say about internship?"
-          />
-
-          <button
-            onClick={askQuestion}
-            className="mt-4 bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg transition"
-          >
-            Ask
-          </button>
-
-          {answer && (
-            <div className="mt-6 bg-black/50 p-4 rounded-lg border border-green-500">
-              <p className="text-green-400 font-semibold">Answer:</p>
-              <p className="mt-2">{answer}</p>
-            </div>
-          )}
-        </div>
-
+      {/* Create Note */}
+      <div className="mb-6">
+        <h2 className="text-xl mb-2">Create / Edit Note</h2>
+        <textarea
+          className="w-full p-3 rounded-xl bg-black/30 border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          rows="3"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Speak or type your thoughts..."
+        />
+        <button
+          onClick={createNote}
+          className="mt-3 px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl hover:scale-105 transition"
+        >
+          Save Note
+        </button>
       </div>
+
+      {/* Voice */}
+      <div className="mb-6">
+        <h2 className="text-xl mb-2">Voice Input</h2>
+        {!recording ? (
+          <button
+            onClick={startRecording}
+            className="px-6 py-2 bg-green-500 rounded-xl hover:scale-105 transition"
+          >
+            🎙 Start Recording
+          </button>
+        ) : (
+          <button
+            onClick={stopRecording}
+            className="px-6 py-2 bg-red-500 rounded-xl hover:scale-105 transition"
+          >
+            ⏹ Stop Recording
+          </button>
+        )}
+      </div>
+
+      {/* Notes */}
+      <div className="mb-6">
+        <h2 className="text-xl mb-2">Saved Notes</h2>
+        <button
+          onClick={clearAllNotes}
+          className="mb-3 px-4 py-1 bg-red-600 rounded-lg"
+        >
+          Clear All
+        </button>
+        <ul className="space-y-2">
+          {notes.map((n) => (
+            <li
+              key={n.id}
+              className="flex justify-between bg-black/30 p-3 rounded-xl border border-white/10"
+            >
+              {n.content}
+              <button
+                onClick={() => deleteNote(n.id)}
+                className="text-red-400"
+              >
+                ❌
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Ask */}
+      <div>
+        <h2 className="text-xl mb-2">Ask AI</h2>
+        <input
+          className="w-full p-3 rounded-xl bg-black/30 border border-white/20 mb-3"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          placeholder="Ask about your notes..."
+        />
+        <button
+          onClick={askQuestion}
+          className="px-6 py-2 bg-blue-500 rounded-xl hover:scale-105 transition"
+        >
+          Ask
+        </button>
+
+        {answer && (
+          <div className="mt-4 p-4 bg-black/40 rounded-xl border border-white/10">
+            <h3 className="font-semibold mb-2">Answer:</h3>
+            <p>{answer}</p>
+          </div>
+        )}
+      </div>
+
     </div>
-  );
+  </div>
+);
+
 }
 
 

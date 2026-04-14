@@ -3,7 +3,7 @@ from qdrant_client.models import VectorParams, Distance, PointStruct
 from qdrant_client.models import CollectionInfo
 
 # Connect to local Qdrant
-client = QdrantClient(host="qdrant", port=6333)
+client = QdrantClient(host="localhost", port=6333)
 
 COLLECTION_NAME = "voice_notes"
 
