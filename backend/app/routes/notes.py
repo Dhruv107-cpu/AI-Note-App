@@ -87,15 +87,14 @@ def get_note(note_id: int, db: Session = Depends(get_db)):
 # =========================
 
 
-from sqlalchemy import or_
+
+
+
 
 @router.post("/ask")
 def ask_question(request: schemas.QuestionRequest, db: Session = Depends(get_db)):
 
-    # 1️⃣ Extract keywords
     keywords = request.question.lower().split()
-
-    # 2️⃣ Build OR search (important)
     filters = [models.Note.content.ilike(f"%{word}%") for word in keywords]
 
     notes = db.query(models.Note).filter(or_(*filters)).all()
@@ -106,6 +105,11 @@ def ask_question(request: schemas.QuestionRequest, db: Session = Depends(get_db)
             "answer": "No relevant notes found.",
             "sources": []
         }
+
+    # 🔥 FIX: define first
+    note_texts = [note.content for note in notes[:5]]
+
+    # 🔥 THEN use
     if len(note_texts) == 1:
         return {
             "question": request.question,
@@ -113,19 +117,6 @@ def ask_question(request: schemas.QuestionRequest, db: Session = Depends(get_db)
             "sources": note_texts
         }
 
-    # 🔥 Only call Gemini if needed
-    answer = ask_gemini(request.question, note_texts)
-
-    return {
-        "question": request.question,
-        "answer": answer,
-        "sources": note_texts
-    }
-
-    # 3️⃣ Limit notes
-    note_texts = [note.content for note in notes[:5]]
-
-    # 4️⃣ Ask Gemini
     answer = ask_gemini(request.question, note_texts)
 
     return {
