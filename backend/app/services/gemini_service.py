@@ -8,28 +8,25 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 model = genai.GenerativeModel("gemini-2.5-flash")
 
-def ask_gemini(question, context):
-    context_text = "\n".join(context)
+def ask_gemini(question, notes):
+    try:
+        context = "\n".join(notes)
 
-    prompt = f"""
-You are an intelligent AI assistant.
+        prompt = f"""
+        Answer the question using the notes below.
 
-Instructions:
-- Use the context to answer
-- Explain clearly, not just extract
-- Answer in 1–3 complete sentences
-- Make it informative and natural
-- If context is insufficient, say: "Not enough information in notes"
--Always respond in 1–3 well-formed sentences.
+        Notes:
+        {context}
 
-Context:
-{context_text}
+        Question:
+        {question}
+        """
 
-Question:
-{question}
+        response = model.generate_content(prompt)
+        return response.text
 
-Answer:
-"""
+    except Exception as e:
+        print("Gemini Error:", e)
 
-    response = model.generate_content(prompt)
-    return response.text
+        # 🔥 FALLBACK (VERY IMPORTANT)
+        return notes[0] if notes else "No relevant notes found."
