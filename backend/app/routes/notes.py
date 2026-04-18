@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import SessionLocal
-from ..services.embedding_service import generate_embedding
-from ..services.qdrant_service import upsert_embedding, search_similar
+
 from ..services.gemini_service import ask_gemini
 
 
@@ -36,10 +35,7 @@ def create_note(note: schemas.NoteCreate, db: Session = Depends(get_db)):
     db.refresh(new_note)
 
     # 2️⃣ Generate embedding
-    vector = generate_embedding(note.content)
-
-    # 3️⃣ Store in Qdrant
-    upsert_embedding(new_note.id, vector)
+    
 
     return new_note
 
@@ -91,28 +87,30 @@ def get_note(note_id: int, db: Session = Depends(get_db)):
 # =========================
 
 
+from sqlalchemy import or_
+
 @router.post("/ask")
 def ask_question(request: schemas.QuestionRequest, db: Session = Depends(get_db)):
-    # 1️⃣ Generate embedding for question
-    query_vector = generate_embedding(request.question)
 
-    # 2️⃣ Search Qdrant
-    results = search_similar(query_vector, top_k=3)
+    # 1️⃣ Extract keywords
+    keywords = request.question.lower().split()
 
-    if not results:
+    # 2️⃣ Build OR search (important)
+    filters = [models.Note.content.ilike(f"%{word}%") for word in keywords]
+
+    notes = db.query(models.Note).filter(or_(*filters)).all()
+
+    if not notes:
         return {
             "question": request.question,
             "answer": "No relevant notes found.",
             "sources": []
         }
 
-    note_ids = [r.payload["note_id"] for r in results]
+    # 3️⃣ Limit notes
+    note_texts = [note.content for note in notes[:5]]
 
-    # 3️⃣ Fetch notes from PostgreSQL
-    notes = db.query(models.Note).filter(models.Note.id.in_(note_ids)).all()
-
-    note_texts = [note.content for note in notes]
-
+    # 4️⃣ Ask Gemini
     answer = ask_gemini(request.question, note_texts)
 
     return {
@@ -120,8 +118,6 @@ def ask_question(request: schemas.QuestionRequest, db: Session = Depends(get_db)
         "answer": answer,
         "sources": note_texts
     }
-
-
 
 
 @router.delete("/{note_id}")

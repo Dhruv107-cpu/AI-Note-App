@@ -1,3 +1,8 @@
+from sentence_transformers import SentenceTransformer
+
+# load once (important)
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
 def generate_embedding(text: str):
-    # TEMP FIX: return dummy vector
-    return [0.0] * 384
+    embedding = model.encode(text, normalize_embeddings=True)
+    return embedding.tolist()

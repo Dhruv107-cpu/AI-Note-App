@@ -20,6 +20,7 @@ COLLECTION_NAME = "voice_notes"
 
 def create_collection():
     try:
+      
         collections = client.get_collections().collections
         existing = [c.name for c in collections]
 
@@ -69,3 +70,4 @@ def search_similar(vector: list, top_k: int = 3):
     except Exception as e:
         print("Search error:", e)
         return []
+    

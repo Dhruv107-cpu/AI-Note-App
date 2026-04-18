@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from .database import engine, Base
 from .routes import notes
 
-from .services.qdrant_service import create_collection
+
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,7 +18,6 @@ app.add_middleware(
 )
 
 Base.metadata.create_all(bind=engine)
-create_collection()
 
 app.include_router(notes.router)
 
