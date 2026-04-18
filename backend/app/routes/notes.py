@@ -106,6 +106,21 @@ def ask_question(request: schemas.QuestionRequest, db: Session = Depends(get_db)
             "answer": "No relevant notes found.",
             "sources": []
         }
+    if len(note_texts) == 1:
+        return {
+            "question": request.question,
+            "answer": note_texts[0],
+            "sources": note_texts
+        }
+
+    # 🔥 Only call Gemini if needed
+    answer = ask_gemini(request.question, note_texts)
+
+    return {
+        "question": request.question,
+        "answer": answer,
+        "sources": note_texts
+    }
 
     # 3️⃣ Limit notes
     note_texts = [note.content for note in notes[:5]]
