@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends,   Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-
+from sqlalchemy import or_   # 🔥 ADD THIS
 
 from .. import models, schemas
 from ..database import SessionLocal
-
 from ..services.gemini_service import ask_gemini
 
 
