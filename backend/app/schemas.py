@@ -1,8 +1,26 @@
 from pydantic import BaseModel
 from datetime import datetime
 
+
+# =========================
+# USER SCHEMAS
+# =========================
+class UserCreate(BaseModel):
+    email: str
+    password: str
+
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
+# =========================
+# NOTE SCHEMAS
+# =========================
 class NoteCreate(BaseModel):
     content: str
+
 
 class NoteResponse(BaseModel):
     id: int
@@ -12,7 +30,9 @@ class NoteResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class QuestionRequest(BaseModel):
-    question: str        
 
-        
+# =========================
+# QUESTION SCHEMA
+# =========================
+class QuestionRequest(BaseModel):
+    question: str

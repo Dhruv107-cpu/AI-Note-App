@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from .database import engine, Base
 from .routes import notes
-
+from .routes import auth
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,3 +28,4 @@ def root():
 
 
 
+app.include_router(auth.router)

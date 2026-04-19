@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import or_   # 🔥 ADD THIS
+from sqlalchemy import or_
 
 from .. import models, schemas
 from ..database import SessionLocal
 from ..services.gemini_service import ask_gemini
-
+from ..dependencies.auth import get_current_user
 
 router = APIRouter(prefix="/notes", tags=["Notes"])
 
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/notes", tags=["Notes"])
 # =========================
 # DB Dependency
 # =========================
-def get_db():   
+def get_db():
     db = SessionLocal()
     try:
         yield db
@@ -22,50 +22,37 @@ def get_db():
 
 
 # =========================
-# CREATE NOTE (Text)
+# CREATE NOTE
 # =========================
 @router.post("/", response_model=schemas.NoteResponse)
-def create_note(note: schemas.NoteCreate, db: Session = Depends(get_db)):
+def create_note(
+    note: schemas.NoteCreate,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user)
+):
+    new_note = models.Note(
+        content=note.content,
+        user_id=user.id   # 🔥 IMPORTANT
+    )
 
-    # 1️⃣ Save to PostgreSQL
-    new_note = models.Note(content=note.content)
     db.add(new_note)
     db.commit()
     db.refresh(new_note)
 
-    # 2️⃣ Generate embedding
-    
-
     return new_note
-
 
 # =========================
 # GET ALL NOTES
 # =========================
 @router.get("/", response_model=list[schemas.NoteResponse])
-def get_notes(db: Session = Depends(get_db)):
-    return db.query(models.Note).all()
-
-
-# =========================
-# SEMANTIC SEARCH
-# =========================
-@router.get("/search")
-def semantic_search(q: str = Query(...), db: Session = Depends(get_db)):
-
-    # 1️⃣ Generate embedding for query
-    query_vector = generate_embedding(q)
-
-    # 2️⃣ Search Qdrant
-    results = search_similar(query_vector, top_k=3)
-
-    # 3️⃣ Extract note IDs
-    note_ids = [r.payload["note_id"] for r in results]
-
-    # 4️⃣ Fetch full notes from PostgreSQL
-    notes = db.query(models.Note).filter(models.Note.id.in_(note_ids)).all()
-
-    return notes
+def get_notes(
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user)
+):
+    if user.role == "admin":
+        return db.query(models.Note).all()
+    else:
+        return db.query(models.Note).filter(models.Note.user_id == user.id).all()
 
 
 # =========================
@@ -77,26 +64,21 @@ def get_note(note_id: int, db: Session = Depends(get_db)):
 
 
 # =========================
-# UPLOAD AUDIO → TRANSCRIBE
-
-
-
+# ASK QUESTION (RAG)
 # =========================
-# RAG – ASK QUESTION
-# =========================
-
-
-
-
-
-
 @router.post("/ask")
-def ask_question(request: schemas.QuestionRequest, db: Session = Depends(get_db)):
+def ask_question(request: schemas.QuestionRequest, db: Session = Depends(get_db),user: models.User = Depends(get_current_user)):
 
     keywords = request.question.lower().split()
     filters = [models.Note.content.ilike(f"%{word}%") for word in keywords]
 
-    notes = db.query(models.Note).filter(or_(*filters)).all()
+    if user.role == "admin":
+        notes = db.query(models.Note).filter(or_(*filters)).all()
+    else:
+        notes = db.query(models.Note).filter(
+        models.Note.user_id == user.id,
+        or_(*filters)
+           ).all()
 
     if not notes:
         return {
@@ -105,10 +87,9 @@ def ask_question(request: schemas.QuestionRequest, db: Session = Depends(get_db)
             "sources": []
         }
 
-    # 🔥 FIX: define first
     note_texts = [note.content for note in notes[:5]]
 
-    # 🔥 THEN use
+    # 🔥 If only one note → no Gemini call (save quota)
     if len(note_texts) == 1:
         return {
             "question": request.question,
@@ -116,6 +97,7 @@ def ask_question(request: schemas.QuestionRequest, db: Session = Depends(get_db)
             "sources": note_texts
         }
 
+    # 🔥 Gemini with fallback handled inside service
     answer = ask_gemini(request.question, note_texts)
 
     return {
@@ -125,20 +107,35 @@ def ask_question(request: schemas.QuestionRequest, db: Session = Depends(get_db)
     }
 
 
+# =========================
+# DELETE ONE NOTE
+# =========================
 @router.delete("/{note_id}")
-def delete_note(note_id: int, db: Session = Depends(get_db)):
+def delete_note(
+    note_id: int,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user)
+):
     note = db.query(models.Note).filter(models.Note.id == note_id).first()
+
     if not note:
         return {"message": "Note not found"}
+
+    # 🔥 permission check
+    if user.role != "admin" and note.user_id != user.id:
+        return {"error": "Not authorized"}
 
     db.delete(note)
     db.commit()
 
     return {"message": "Note deleted"}
+
+# =========================
+# DELETE ALL NOTES
+# =========================
 @router.delete("/")
 def delete_all_notes(db: Session = Depends(get_db)):
     db.query(models.Note).delete()
     db.commit()
 
     return {"message": "All notes deleted"}
-
