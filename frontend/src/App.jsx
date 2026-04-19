@@ -17,51 +17,53 @@ function App() {
   // ===============================
   // LOGIN SCREEN
   // ===============================
-  if (!token) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen gap-3">
-        <h2 className="text-2xl font-bold">Login</h2>
+  const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
 
-        <input
-          placeholder="Email"
-            className="p-2 border rounded text-black"
-          onChange={(e) => (window.email = e.target.value)}
-        />
+if (!token) {
+  return (
+    <div className="flex flex-col items-center justify-center h-screen gap-3">
+      <h2 className="text-2xl font-bold">Login</h2>
 
-        <input
-          type="password"
-          placeholder="Password"
-            className="p-2 border rounded text-black"
-          onChange={(e) => (window.password = e.target.value)}
-        />
+      <input
+        placeholder="Email"
+        className="p-2 border rounded text-black"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
 
-        <button
-          className="px-6 py-2 bg-blue-500 text-white rounded"
-          onClick={async () => {
-            const res = await fetch(`${API_BASE}/auth/login`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: window.email,
-                password: window.password,
-              }),
-            });
+      <input
+        type="password"
+        placeholder="Password"
+        className="p-2 border rounded text-black"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
 
-            const data = await res.json();
+      <button
+        className="px-6 py-2 bg-blue-500 text-white rounded"
+        onClick={async () => {
+          const res = await fetch(`${API_BASE}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
 
-            if (data.access_token) {
-              localStorage.setItem("token", data.access_token);
-              setToken(data.access_token);
-            } else {
-              alert("Login failed");
-            }
-          }}
-        >
-          Login
-        </button>
-      </div>
-    );
-  }
+          const data = await res.json();
+
+          if (data.access_token) {
+            localStorage.setItem("token", data.access_token);
+            setToken(data.access_token);
+          } else {
+            alert("Login failed");
+          }
+        }}
+      >
+        Login
+      </button>
+    </div>
+  );
+}
 
   // ===============================
   // Fetch Notes
