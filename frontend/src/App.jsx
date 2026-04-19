@@ -68,18 +68,20 @@ if (!token) {
   // ===============================
   // Fetch Notes
   // ===============================
-  const fetchNotes = async () => {
+ const fetchNotes = async () => {
+  try {
     const res = await fetch(`${API_BASE}/notes/`, {
       headers: { token },
     });
+
+    if (!res.ok) throw new Error("Failed");
+
     const data = await res.json();
     setNotes(data);
-  };
-
-  useEffect(() => {
-    fetchNotes();
-  }, []);
-
+  } catch (err) {
+    console.log("Fetch error:", err);
+  }
+};
   // ===============================
   // Create Note
   // ===============================
