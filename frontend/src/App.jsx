@@ -20,6 +20,31 @@ function App() {
   const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
 
+  useEffect(() => {
+  if (token) {
+    fetchNotes();
+  }
+}, [token]);
+
+// ===============================
+  // Fetch Notes
+  // ===============================
+  const fetchNotes = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/notes/`, {
+      headers: { token },
+    });
+
+    if (!res.ok) throw new Error("Failed");
+
+    const data = await res.json();
+    setNotes(data);
+  } catch (err) {
+    console.log("Fetch error:", err);
+  }
+};
+
+
 if (!token) {
   return (
     <div className="flex flex-col items-center justify-center h-screen gap-3">
@@ -65,29 +90,8 @@ if (!token) {
   );
 }
 
-  // ===============================
-  // Fetch Notes
-  // ===============================
-  const fetchNotes = async () => {
-  try {
-    const res = await fetch(`${API_BASE}/notes/`, {
-      headers: { token },
-    });
+  
 
-    if (!res.ok) throw new Error("Failed");
-
-    const data = await res.json();
-    setNotes(data);
-  } catch (err) {
-    console.log("Fetch error:", err);
-  }
-};
-
-  useEffect(() => {
-  if (token) {
-    fetchNotes();
-  }
-}, [token]);
 
   // ===============================
   // Create Note
